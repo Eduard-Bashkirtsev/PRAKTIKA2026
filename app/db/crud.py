@@ -1,41 +1,77 @@
+from sqlalchemy.orm import Session
 from app.db.models import Category, Book
 
-# Categories
-def create_category(db, title):
+# ---------------------- CATEGORY ----------------------
+
+def get_categories(db: Session):
+    return db.query(Category).all()
+
+def get_category(db: Session, category_id: int):
+    return db.query(Category).filter(Category.id == category_id).first()
+
+def create_category(db: Session, title: str):
     category = Category(title=title)
     db.add(category)
     db.commit()
     db.refresh(category)
     return category
 
-def get_categories(db):
-    return db.query(Category).all()
+def update_category(db: Session, category_id: int, title: str):
+    category = get_category(db, category_id)
 
-# Books
-def create_book(db, title, description, price, url, category):
-    book = Book(
-        title=title,
-        description=description,
-        price=price,
-        url=url,
-        category=category
-    )
+    if category:
+        category.title = title
+        db.commit()
+        db.refresh(category)
+
+    return category
+
+def delete_category(db: Session, category_id: int):
+    category = get_category(db, category_id)
+
+    if category:
+        db.delete(category)
+        db.commit()
+
+    return category
+
+# ---------------------- BOOK ----------------------
+
+def get_books(db: Session, category_id=None):
+    query = db.query(Book)
+
+    if category_id:
+        query = query.filter(Book.category_id == category_id)
+
+    return query.all()
+
+def get_book(db: Session, book_id: int):
+    return db.query(Book).filter(Book.id == book_id).first()
+
+def create_book(db: Session, data):
+    book = Book(**data.dict())
     db.add(book)
     db.commit()
     db.refresh(book)
     return book
 
-def get_books(db):
-    return db.query(Book).all()
+def update_book(db: Session, book_id: int, data):
+    book = get_book(db, book_id)
 
-def update_book_price(db, book_id, new_price):
-    book = db.query(Book).filter(Book.id == book_id).first()
     if book:
-        book.price = new_price
-        db.commit()
+        for key, value in data.dict().items():
+            setattr(book, key, value)
 
-def delete_book(db, book_id):
-    book = db.query(Book).filter(Book.id == book_id).first()
+        db.commit()
+        db.refresh(book)
+
+    return book
+
+def delete_book(db: Session, book_id: int):
+    book = get_book(db, book_id)
+
     if book:
         db.delete(book)
         db.commit()
+
+    return book
