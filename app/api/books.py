@@ -1,18 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.db.db import SessionLocal
+from app.db.db import get_db
 from app.db import crud
 from app import schemas
 
 router = APIRouter(prefix="/books", tags=["Books"])
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 @router.get("/", response_model=list[schemas.Book])
 def read_books(category_id: int | None = None, db: Session = Depends(get_db)):

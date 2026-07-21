@@ -1,5 +1,27 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
-class Category(BaseModel):
+class CategoryBase(BaseModel):
+    title: str
+
+class CategoryCreate(CategoryBase):
+    pass
+
+class Category(CategoryBase):
     id: int
-    name: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+class BookBase(BaseModel):
+    title: str
+    description: str
+    price: float
+    url: str
+    category_id: int
+
+class BookCreate(BookBase):
+    pass
+
+class Book(BookBase):
+    id: int
+
+    model_config = ConfigDict(from_attributes=True)
